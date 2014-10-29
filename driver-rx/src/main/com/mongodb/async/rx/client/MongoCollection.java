@@ -60,7 +60,7 @@ public interface MongoCollection<T> {
      * @param filter the filter
      * @return a view on this collection with the given filter
      */
-    MongoView<T> find(Document filter);
+    MongoView<T> find(T filter);
 
     /**
      * Insert a document into the collection.

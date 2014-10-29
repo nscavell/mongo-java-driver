@@ -32,21 +32,21 @@ import java.util.List;
  *
  * @since 3.0
  */
-public class CollectionAdministrationImpl implements CollectionAdministration {
+public class CollectionAdministrationImpl<T> implements CollectionAdministration<T> {
 
-    private final com.mongodb.async.client.CollectionAdministration wrapped;
+    private final com.mongodb.async.client.CollectionAdministration<T> wrapped;
 
-    CollectionAdministrationImpl(final com.mongodb.async.client.CollectionAdministration wrapped) {
+    CollectionAdministrationImpl(final com.mongodb.async.client.CollectionAdministration<T> wrapped) {
         this.wrapped = wrapped;
     }
 
     @Override
-    public Observable<Void> createIndex(final Document key) {
+    public Observable<Void> createIndex(final T key) {
         return createIndex(key, new CreateIndexOptions());
     }
 
     @Override
-    public Observable<Void> createIndex(final Document key, final CreateIndexOptions createIndexOptions) {
+    public Observable<Void> createIndex(final T key, final CreateIndexOptions createIndexOptions) {
         return Observable.create(new OnSubscribeAdapter<Void>(new OnSubscribeAdapter.FutureFunction<Void>() {
             @Override
             public MongoFuture<Void> apply() {
@@ -56,21 +56,21 @@ public class CollectionAdministrationImpl implements CollectionAdministration {
     }
 
     @Override
-    public Observable<Document> getIndexes() {
+    public Observable<T> getIndexes() {
         return Observable.concat(
             Observable.create(
-                 new OnSubscribeAdapter<List<Document>>(
-                     new OnSubscribeAdapter.FutureFunction<List<Document>>() {
+                 new OnSubscribeAdapter<List<T>>(
+                     new OnSubscribeAdapter.FutureFunction<List<T>>() {
                          @Override
-                         public MongoFuture<List<Document>>
+                         public MongoFuture<List<T>>
                          apply() {
                              return wrapped.getIndexes();
                          }
                      }
                  )
-            ).map(new Func1<List<Document>, Observable<Document>>() {
+            ).map(new Func1<List<T>, Observable<T>>() {
                 @Override
-                public Observable<Document> call(final List<Document> documents) {
+                public Observable<T> call(final List<T> documents) {
                     return Observable.from(documents);
                 }
             })

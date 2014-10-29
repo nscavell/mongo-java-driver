@@ -42,7 +42,7 @@ public interface MongoWritableView<T> {
      * @param updateOperations the update operations to apply to each document
      * @return the result of the update
      */
-    MongoFuture<WriteConcernResult> update(Document updateOperations);
+    MongoFuture<WriteConcernResult> update(T updateOperations);
 
     /**
      * With the given update operations, update a single document in the underlying collection matching the filter criteria in the view.
@@ -50,7 +50,7 @@ public interface MongoWritableView<T> {
      * @param updateOperations the update operations to apply to each document
      * @return the result of the update
      */
-    MongoFuture<WriteConcernResult> updateOne(Document updateOperations);
+    MongoFuture<WriteConcernResult> updateOne(T updateOperations);
 
     /**
      * Removes all the documents in the underlying collection matching the filter criteria in the view.

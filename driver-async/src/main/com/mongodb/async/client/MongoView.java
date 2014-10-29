@@ -36,7 +36,7 @@ public interface MongoView<T> extends MongoWritableView<T>, MongoReadableView<T>
      * @param filter the filter
      * @return this
      */
-    MongoView<T> find(Document filter);
+    MongoView<T> find(T filter);
 
 
     /**
@@ -45,7 +45,7 @@ public interface MongoView<T> extends MongoWritableView<T>, MongoReadableView<T>
      * @param sortCriteria the sort criteria
      * @return this
      */
-    MongoView<T> sort(Document sortCriteria);
+    MongoView<T> sort(T sortCriteria);
 
     /**
      * Specifies the number of documents to skip in the underlying collection.
@@ -69,7 +69,7 @@ public interface MongoView<T> extends MongoWritableView<T>, MongoReadableView<T>
      * @param selector the fields to select
      * @return this
      */
-    MongoView<T> fields(Document selector);
+    MongoView<T> fields(T selector);
 
     /**
      * Specifies that update operations executed on this view will result in inserts if no document with the _id of the document exists in

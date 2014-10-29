@@ -23,7 +23,6 @@ import com.mongodb.WriteConcernResult;
 import com.mongodb.async.MongoFuture;
 import com.mongodb.async.SingleResultCallback;
 import com.mongodb.async.client.MongoCollectionOptions;
-import org.bson.Document;
 import org.bson.codecs.Codec;
 import rx.Observable;
 import rx.Subscriber;
@@ -61,7 +60,7 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
     }
 
     @Override
-    public MongoView<T> find(final Document filter) {
+    public MongoView<T> find(final T filter) {
         return new MongoCollectionView(filter);
     }
 
@@ -96,25 +95,25 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
     }
 
     @Override
-    public CollectionAdministration tools() {
-        return new CollectionAdministrationImpl(wrapped.tools());
+    public CollectionAdministration<T> tools() {
+        return new CollectionAdministrationImpl<T>(wrapped.tools());
     }
 
     private final class MongoCollectionView implements MongoView<T> {
         private final com.mongodb.async.client.MongoView<T> wrappedView;
 
-        private MongoCollectionView(final Document filter) {
+        private MongoCollectionView(final T filter) {
             wrappedView = wrapped.find(filter);
         }
 
         @Override
-        public MongoView<T> find(final Document filter) {
+        public MongoView<T> find(final T filter) {
             wrappedView.find(filter);
             return this;
         }
 
         @Override
-        public MongoView<T> sort(final Document sortCriteria) {
+        public MongoView<T> sort(final T sortCriteria) {
             wrappedView.sort(sortCriteria);
             return this;
         }
@@ -132,7 +131,7 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
         }
 
         @Override
-        public MongoView<T> fields(final Document selector) {
+        public MongoView<T> fields(final T selector) {
             wrappedView.fields(selector);
             return this;
         }
@@ -198,7 +197,7 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
         }
 
         @Override
-        public Observable<WriteConcernResult> update(final Document updateOperations) {
+        public Observable<WriteConcernResult> update(final T updateOperations) {
             return Observable.create(new OnSubscribeAdapter<WriteConcernResult>(new FutureFunction<WriteConcernResult>() {
                 @Override
                 public MongoFuture<WriteConcernResult> apply() {
@@ -208,7 +207,7 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
         }
 
         @Override
-        public Observable<WriteConcernResult> updateOne(final Document updateOperations) {
+        public Observable<WriteConcernResult> updateOne(final T updateOperations) {
             return Observable.create(new OnSubscribeAdapter<WriteConcernResult>(new FutureFunction<WriteConcernResult>() {
                 @Override
                 public MongoFuture<WriteConcernResult> apply() {

@@ -88,7 +88,7 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
     }
 
     @Override
-    public MongoView<T> find(final Document filter) {
+    public MongoView<T> find(final T filter) {
         return new MongoCollectionView().find(filter);
     }
 
@@ -128,8 +128,8 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
     }
 
     @Override
-    public CollectionAdministration tools() {
-        return new CollectionAdministrationImpl(client, namespace);
+    public CollectionAdministration<T> tools() {
+        return new CollectionAdministrationImpl<T>(client, namespace, options.getDocumentCodec(), codec);
     }
 
     <V> MongoFuture<V> execute(final AsyncWriteOperation<V> writeOperation) {
@@ -189,8 +189,9 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
         }
 
         @Override
-        public MongoView<T> find(final Document filter) {
-            this.filter = new BsonDocumentWrapper<Document>(filter, options.getDocumentCodec());
+        public MongoView<T> find(final T filter) {
+            notNull("filter", filter);
+            this.filter = new BsonDocumentWrapper<T>(filter, codec);
             return this;
         }
 
@@ -200,7 +201,7 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
         }
 
         @Override
-        public MongoView<T> sort(final Document sortCriteria) {
+        public MongoView<T> sort(final T sortCriteria) {
             findOptions.sort(asBson(sortCriteria));
             return this;
         }
@@ -218,8 +219,8 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
         }
 
         @Override
-        public MongoView<T> fields(final Document selector) {
-            findOptions.projection(new BsonDocumentWrapper<Document>(selector, options.getDocumentCodec()));
+        public MongoView<T> fields(final T selector) {
+            findOptions.projection(new BsonDocumentWrapper<T>(selector, codec));
             return this;
         }
 
@@ -298,24 +299,22 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
         }
 
         @Override
-        public MongoFuture<WriteConcernResult> update(final Document updateOperations) {
+        public MongoFuture<WriteConcernResult> update(final T updateOperations) {
             notNull("updateOperations", updateOperations);
             return execute(new UpdateOperation(getNamespace(), true, options.getWriteConcern(),
                                                asList(new UpdateRequest(filter,
-                                                                        new BsonDocumentWrapper<Document>(updateOperations,
-                                                                                                          options.getDocumentCodec()),
-                                                                        WriteRequest.Type.UPDATE)
-                                                    .upsert(upsert).multi(true))
+                                                   new BsonDocumentWrapper<T>(updateOperations, codec),
+                                                   WriteRequest.Type.UPDATE)
+                                                   .upsert(upsert).multi(true))
             ));
         }
 
         @Override
-        public MongoFuture<WriteConcernResult> updateOne(final Document updateOperations) {
+        public MongoFuture<WriteConcernResult> updateOne(final T updateOperations) {
             notNull("updateOperations", updateOperations);
             return execute(new UpdateOperation(getNamespace(), true, options.getWriteConcern(),
                                                asList(new UpdateRequest(filter,
-                                                                        new BsonDocumentWrapper<Document>(updateOperations,
-                                                                                                          options.getDocumentCodec()),
+                                                                        new BsonDocumentWrapper<T>(updateOperations, codec),
                                                                         WriteRequest.Type.UPDATE)
                                                       .upsert(upsert).multi(false))
             ));
@@ -355,7 +354,12 @@ class MongoCollectionImpl<T> implements MongoCollection<T> {
             } else if (document instanceof Document) {
                 return new BsonDocumentWrapper(document, options.getDocumentCodec());
             } else {
-                throw new IllegalArgumentException("No encoder for class " + document.getClass());
+                Class<?> c = document.getClass();
+                if (codec.getEncoderClass().isAssignableFrom(c)) {
+                    return new BsonDocumentWrapper(document, codec);
+                } else {
+                    throw new IllegalArgumentException("No encoder for class " + c);
+                }
             }
 
         }

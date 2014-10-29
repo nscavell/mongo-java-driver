@@ -28,7 +28,7 @@ import com.mongodb.operation.RenameCollectionOperation;
 import org.bson.BsonDocument;
 import org.bson.BsonDocumentWrapper;
 import org.bson.Document;
-import org.bson.codecs.DocumentCodec;
+import org.bson.codecs.Codec;
 
 import java.util.List;
 
@@ -40,23 +40,29 @@ import static com.mongodb.ReadPreference.primary;
  *
  * @since 3.0
  */
-public class CollectionAdministrationImpl implements CollectionAdministration {
+public class CollectionAdministrationImpl<T> implements CollectionAdministration<T> {
     private final MongoClientImpl client;
     private final MongoNamespace collectionNamespace;
+    private final Codec<Document> documentCodec;
+    private final Codec<T> codec;
 
     CollectionAdministrationImpl(final MongoClientImpl client,
-                                 final MongoNamespace collectionNamespace) {
+                                 final MongoNamespace collectionNamespace,
+                                 final Codec<Document> documentCodec,
+                                 final Codec<T> codec) {
         this.client = client;
         this.collectionNamespace = collectionNamespace;
+        this.documentCodec = documentCodec;
+        this.codec = codec;
     }
 
     @Override
-    public MongoFuture<Void> createIndex(final Document key) {
+    public MongoFuture<Void> createIndex(final T key) {
         return createIndex(key, new CreateIndexOptions());
     }
 
     @Override
-    public MongoFuture<Void> createIndex(final Document key, final CreateIndexOptions createIndexOptions) {
+    public MongoFuture<Void> createIndex(final T key, final CreateIndexOptions createIndexOptions) {
         return client.execute(new CreateIndexOperation(collectionNamespace, asBson(key))
                                   .name(createIndexOptions.getName())
                                   .background(createIndexOptions.isBackground())
@@ -64,7 +70,7 @@ public class CollectionAdministrationImpl implements CollectionAdministration {
                                   .sparse(createIndexOptions.isSparse())
                                   .expireAfterSeconds(createIndexOptions.getExpireAfterSeconds())
                                   .version(createIndexOptions.getVersion())
-                                  .weights(asBson((Document) createIndexOptions.getWeights()))
+                                  .weights(asBson(createIndexOptions.getWeights()))
                                   .defaultLanguage(createIndexOptions.getDefaultLanguage())
                                   .languageOverride(createIndexOptions.getLanguageOverride())
                                   .textIndexVersion(createIndexOptions.getTextIndexVersion())
@@ -76,8 +82,8 @@ public class CollectionAdministrationImpl implements CollectionAdministration {
     }
 
     @Override
-    public MongoFuture<List<Document>> getIndexes() {
-        return client.execute(new ListIndexesOperation<Document>(collectionNamespace, new DocumentCodec()), primary());
+    public MongoFuture<List<T>> getIndexes() {
+        return client.execute(new ListIndexesOperation<T>(collectionNamespace, codec), primary());
     }
 
     @Override
@@ -109,11 +115,21 @@ public class CollectionAdministrationImpl implements CollectionAdministration {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private BsonDocument asBson(final Document document) {
+    private BsonDocument asBson(final Object document) {
         if (document == null) {
             return null;
+        }
+        if (document instanceof BsonDocument) {
+            return (BsonDocument) document;
+        } else if (document instanceof Document) {
+            return new BsonDocumentWrapper(document, documentCodec);
         } else {
-            return new BsonDocumentWrapper(document, new DocumentCodec());
+            Class<?> c = document.getClass();
+            if (codec.getEncoderClass().isAssignableFrom(c)) {
+                return new BsonDocumentWrapper(document, codec);
+            } else {
+                throw new IllegalArgumentException("No encoder for class " + c);
+            }
         }
 
     }

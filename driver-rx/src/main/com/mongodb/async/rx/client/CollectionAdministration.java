@@ -28,14 +28,14 @@ import rx.Observable;
  *
  * @since 3.0
  */
-public interface CollectionAdministration {
+public interface CollectionAdministration<T> {
 
     /**
      * @param key an object describing the index key(s), which may not be null. This can be of any type for which a {@code Codec} is
      *            registered
      * @mongodb.driver.manual reference/method/db.collection.ensureIndex Ensure Index
      */
-    Observable<Void> createIndex(Document key);
+    Observable<Void> createIndex(T key);
 
     /**
      * @param key an object describing the index key(s), which may not be null. This can be of any type for which a {@code Codec} is
@@ -43,13 +43,13 @@ public interface CollectionAdministration {
      * @param createIndexOptions the options for the index
      * @mongodb.driver.manual reference/method/db.collection.ensureIndex Ensure Index
      */
-    Observable<Void> createIndex(Document key, CreateIndexOptions createIndexOptions);
+    Observable<Void> createIndex(T key, CreateIndexOptions createIndexOptions);
 
     /**
      * @return all the indexes on this collection
      * @mongodb.driver.manual reference/method/db.collection.getIndexes/ getIndexes
      */
-    Observable<Document> getIndexes();
+    Observable<T> getIndexes();
 
     /**
      * Drops this collection from the Database.

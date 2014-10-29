@@ -79,6 +79,16 @@ public interface MongoDatabase {
     Observable<Document> executeCommand(Document commandDocument);
 
     /**
+     * Asynchronously execute the command described by the given document.
+     *
+     * @param commandDocument the document describing the command to execute.
+     * @param codec the codec to use to encode and decode documents for this command
+     * @return an Observable representing the completion of the command. It will report exactly one event when the command completes
+     * successfully.
+     */
+    <T> Observable<T> executeCommand(T commandDocument, Codec<T> codec);
+
+    /**
      * @return the DatabaseAdministration that provides admin methods that can be performed
      */
     DatabaseAdministration tools();

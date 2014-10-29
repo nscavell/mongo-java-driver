@@ -20,7 +20,6 @@ import com.mongodb.MongoNamespace;
 import com.mongodb.async.MongoFuture;
 import com.mongodb.client.model.CreateIndexOptions;
 import com.mongodb.client.model.RenameCollectionOptions;
-import org.bson.Document;
 
 import java.util.List;
 
@@ -30,13 +29,13 @@ import java.util.List;
  *
  * @since 3.0
  */
-public interface CollectionAdministration {
+public interface CollectionAdministration<T> {
     /**
      * @param key an object describing the index key(s), which may not be null. This can be of any type for which a {@code Codec} is
      *            registered
      * @mongodb.driver.manual reference/method/db.collection.ensureIndex Ensure Index
      */
-    MongoFuture<Void> createIndex(Document key);
+    MongoFuture<Void> createIndex(T key);
 
     /**
      * @param key an object describing the index key(s), which may not be null. This can be of any type for which a {@code Codec} is
@@ -44,14 +43,14 @@ public interface CollectionAdministration {
      * @param createIndexOptions the options for the index
      * @mongodb.driver.manual reference/method/db.collection.ensureIndex Ensure Index
      */
-    MongoFuture<Void> createIndex(Document key, CreateIndexOptions createIndexOptions);
+    MongoFuture<Void> createIndex(T key, CreateIndexOptions createIndexOptions);
 
 
     /**
      * @return all the indexes on this collection
      * @mongodb.driver.manual reference/method/db.collection.getIndexes/ getIndexes
      */
-    MongoFuture<List<Document>> getIndexes();
+    MongoFuture<List<T>> getIndexes();
 
     /**
      * Drops this collection from the Database.
