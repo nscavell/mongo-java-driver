@@ -65,6 +65,11 @@ class MongoDatabaseImpl implements MongoDatabase {
     }
 
     @Override
+    public <T> MongoFuture<T> executeCommand(final T commandDocument, Codec<T> codec) {
+        return client.execute(new CommandWriteOperation<T>(name, new BsonDocumentWrapper<T>(commandDocument, codec), codec));
+    }
+
+    @Override
     public DatabaseAdministration tools() {
         return new DatabaseAdministrationImpl(name, client);
     }

@@ -74,6 +74,15 @@ public interface MongoDatabase {
     MongoFuture<Document> executeCommand(Document commandDocument);
 
     /**
+     * Asynchronously execute the command described by the given document.
+     *
+     * @param commandDocument the document describing the command to execute.
+     * @param codec the codec to use to encode and decode documents for this command
+     * @return a future representation the completion of the command
+     */
+    <T> MongoFuture<T> executeCommand(T commandDocument, Codec<T> codec);
+
+    /**
      * @return the DatabaseAdministration that provides admin methods that can be performed
      */
     DatabaseAdministration tools();
